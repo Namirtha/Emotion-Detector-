@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Emotion Detector - Analyze the emotions in your text using Watson NLP.">
+    <title>Emotion Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(30, 30, 55, 0.7);
+            --border-glow: rgba(99, 102, 241, 0.3);
+            --text-primary: #e8e8f0;
+            --text-secondary: #9ca3af;
+            --accent-1: #6366f1;
+            --accent-2: #8b5cf6;
+            --accent-3: #a78bfa;
+            --gradient-main: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background orbs */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            z-index: 0;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        body::before {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-1);
+            top: -150px;
+            right: -100px;
+        }
+
+        body::after {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-2);
+            bottom: -100px;
+            left: -80px;
+            animation-delay: -6s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-40px) scale(1.05);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 640px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-glow);
+            transition: box-shadow 0.4s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 0 50px rgba(99, 102, 241, 0.2);
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            background: var(--gradient-main);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.6rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem 1.15rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            background: rgba(15, 15, 26, 0.6);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        textarea::placeholder {
+            color: rgba(156, 163, 175, 0.5);
+        }
+
+        textarea:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 1.25rem;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--gradient-main);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            transition: transform 0.2s ease, box-shadow 0.3s ease, opacity 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.loading {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            padding: 1.15rem 1.25rem;
+            border-radius: 12px;
+            background: rgba(15, 15, 26, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            min-height: 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+        }
+
+        #result.visible {
+            min-height: auto;
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        #result.error {
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+
+        footer {
+            position: relative;
+            z-index: 1;
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(156, 163, 175, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>Emotion Detector</h1>
+            <p class="subtitle">Analyze the emotions behind your words</p>
+
+            <label for="textToAnalyze">Your Text</label>
+            <textarea id="textToAnalyze" placeholder="Type or paste a sentence to analyze…"></textarea>
+
+            <button class="btn" id="analyzeBtn" onclick="runSentimentAnalysis()">
+                Analyze Emotions
+            </button>
+
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <footer>Powered by Watson NLP &mdash; IBM Skills Network</footer>
+
+    <script>
+        /**
+         * Send the user's text to the /emotionDetector endpoint
+         * and display the result on the page.
+         */
+        function runSentimentAnalysis() {
+            const textToAnalyze = document.getElementById("textToAnalyze").value.trim();
+            const resultEl = document.getElementById("result");
+            const btn = document.getElementById("analyzeBtn");
+
+            // Reset state
+            resultEl.classList.remove("visible", "error");
+
+            btn.textContent = "Analyzing…";
+            btn.classList.add("loading");
+
+            fetch(`/emotionDetector?textToAnalyze=${encodeURIComponent(textToAnalyze)}`)
+                .then(response => response.text())
+                .then(data => {
+                    resultEl.innerHTML = data;
+
+                    if (data.includes("Invalid text")) {
+                        resultEl.classList.add("error");
+                    }
+
+                    resultEl.classList.add("visible");
+                    btn.textContent = "Analyze Emotions";
+                    btn.classList.remove("loading");
+                })
+                .catch(() => {
+                    resultEl.innerHTML = "Something went wrong. Please try again.";
+                    resultEl.classList.add("visible", "error");
+                    btn.textContent = "Analyze Emotions";
+                    btn.classList.remove("loading");
+                });
+        }
+
+        // Allow Ctrl+Enter / Cmd+Enter to submit
+        document.getElementById("textToAnalyze").addEventListener("keydown", function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                runSentimentAnalysis();
+            }
+        });
+    </script>
+</body>
+
+</html>
